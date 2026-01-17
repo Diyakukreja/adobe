@@ -283,33 +283,13 @@ const App = ({ addOnUISdk, sandboxProxy, onBack }) => {
 
     return (
         <Theme system="express" scale="medium" color="light">
-            <div className="version-control-app" style={{ 
-                position: "relative",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                minHeight: "100vh"
-            }}>
+            <div className="relative min-h-screen bg-classic">
                 {onBack && (
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: "20px",
-                            left: "20px",
-                            zIndex: 1000,
-                            background: "rgba(255, 255, 255, 0.95)",
-                            padding: "8px 16px",
-                            borderRadius: "12px",
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
-                        }}
-                    >
+                    <div className="absolute top-5 left-5 z-50 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-xl shadow-classic-lg border border-slate-200">
                         <Button 
                             size="m" 
                             onClick={onBack}
-                            style={{
-                                background: "transparent",
-                                border: "none",
-                                color: "#667eea",
-                                fontWeight: "600"
-                            }}
+                            className="bg-transparent border-none text-slate-700 font-semibold hover:text-slate-900"
                         >
                             ← Back
                         </Button>
@@ -319,7 +299,7 @@ const App = ({ addOnUISdk, sandboxProxy, onBack }) => {
                     error={error} 
                     onDismiss={() => setError(null)} 
                 />
-                <div className="version-content-wrapper">
+                <div className="max-w-3xl mx-auto pt-16 px-5 pb-8">
                     <Header 
                         projectName={projectName} 
                         currentVersion={commits.length > 0 ? (currentVersion || commits[0]?.versionId) : null} 

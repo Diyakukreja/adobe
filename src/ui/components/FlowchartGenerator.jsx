@@ -73,7 +73,6 @@ export default function FlowchartGenerator({ addOnUISdk, sandboxProxy }) {
     }
   };
 
-
   const handleTestConnection = () => {
     console.log("Test button clicked");
     if (!sandboxProxy) {
@@ -102,131 +101,56 @@ export default function FlowchartGenerator({ addOnUISdk, sandboxProxy }) {
   };
 
   return (
-    <div style={{ 
-      padding: "20px",
-      fontFamily: "Adobe Clean, -apple-system, sans-serif",
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      minHeight: "100vh",
-    }}>
-      <div style={{
-        background: "white",
-        borderRadius: "16px",
-        padding: "24px",
-        boxShadow: "0 10px 30px rgba(0,0,0,0.2)"
-      }}>
-        <h2 style={{ 
-          marginBottom: "20px", 
-          fontSize: "24px",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          fontWeight: "bold"
-        }}>
+    <div className="p-5 min-h-screen bg-classic">
+      <div className="card max-w-3xl mx-auto">
+        <h2 className="text-3xl font-bold text-slate-800 mb-5 tracking-tight">
           🎬 YouTube → Flowchart
         </h2>
 
         <input
-          style={{
-            width: "100%",
-            padding: "12px 16px",
-            marginBottom: "12px",
-            border: "2px solid #e2e8f0",
-            borderRadius: "8px",
-            fontSize: "14px",
-            outline: "none",
-          }}
+          className="input-classic mb-3"
           placeholder="Paste YouTube URL here..."
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           onKeyPress={(e) => e.key === "Enter" && handleGenerate()}
-          onFocus={(e) => e.target.style.borderColor = "#667eea"}
-          onBlur={(e) => e.target.style.borderColor = "#e2e8f0"}
         />
 
         <button
           onClick={handleGenerate}
           disabled={loading}
-          style={{
-            width: "100%",
-            padding: "14px",
-            background: loading 
-              ? "#cbd5e0" 
-              : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            cursor: loading ? "not-allowed" : "pointer",
-            fontSize: "16px",
-            fontWeight: "bold",
-            boxShadow: loading ? "none" : "0 4px 12px rgba(102, 126, 234, 0.4)",
-          }}
+          className={`w-full py-3.5 px-4 rounded-lg font-semibold text-white shadow-classic-lg transition-all duration-200 mb-2 ${
+            loading 
+              ? "bg-slate-400 cursor-not-allowed" 
+              : "bg-slate-800 hover:bg-slate-700 active:scale-98"
+          }`}
         >
           {loading ? "🔄 Generating..." : "✨ Generate Flowchart"}
         </button>
 
-        {/* TEST BUTTON */}
         <button
           onClick={handleTestConnection}
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginTop: "8px",
-            background: "#ed8936",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontSize: "14px",
-            fontWeight: "600",
-          }}
+          className="w-full py-2.5 px-4 mt-2 bg-slate-600 text-white rounded-lg font-semibold text-sm shadow-md hover:bg-slate-500 transition-colors active:scale-98"
         >
           🧪 Test Connection
         </button>
 
         {error && (
-          <div style={{
-            marginTop: "16px",
-            padding: "12px 16px",
-            backgroundColor: "#fed7d7",
-            color: "#c53030",
-            borderRadius: "8px",
-            fontSize: "14px",
-          }}>
+          <div className="mt-4 p-4 bg-red-50 text-red-800 rounded-lg text-sm border-2 border-red-200">
             ⚠️ {error}
           </div>
         )}
 
         {data && (
-          <div style={{ marginTop: "20px" }}>
-            <div style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "12px",
-              gap: "8px",
-              flexWrap: "wrap"
-            }}>
-              <p style={{ 
-                fontSize: "13px", 
-                color: "#718096",
-                margin: 0
-              }}>
+          <div className="mt-5">
+            <div className="flex justify-between items-center mb-3 gap-2 flex-wrap">
+              <p className="text-sm text-slate-600 m-0">
                 ✅ {data.metadata.node_count} nodes • Click to edit
               </p>
               
-              <div style={{ display: "flex", gap: "8px" }}>
+              <div className="flex gap-2">
                 <button
                   onClick={handleDownloadJSON}
-                  style={{
-                    padding: "8px 16px",
-                    background: "#48bb78",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                  }}
+                  className="px-4 py-2 bg-slate-600 text-white rounded-lg font-semibold text-sm shadow-md hover:bg-slate-500 transition-colors active:scale-95"
                 >
                   💾 JSON
                 </button>
@@ -234,19 +158,11 @@ export default function FlowchartGenerator({ addOnUISdk, sandboxProxy }) {
                 <button
                   onClick={handleAddToPage}
                   disabled={adding}
-                  style={{
-                    padding: "10px 20px",
-                    background: adding 
-                      ? "#cbd5e0"
-                      : "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "8px",
-                    cursor: adding ? "not-allowed" : "pointer",
-                    fontSize: "15px",
-                    fontWeight: "700",
-                    boxShadow: adding ? "none" : "0 4px 12px rgba(245, 87, 108, 0.4)",
-                  }}
+                  className={`px-5 py-2.5 rounded-lg font-bold text-sm shadow-classic-lg transition-all duration-200 ${
+                    adding 
+                      ? "bg-slate-400 cursor-not-allowed" 
+                      : "bg-slate-800 text-white hover:bg-slate-700 active:scale-95"
+                  }`}
                 >
                   {adding ? "⏳ Adding..." : "➕ Add to Page"}
                 </button>
@@ -255,17 +171,9 @@ export default function FlowchartGenerator({ addOnUISdk, sandboxProxy }) {
             
             <Flowchart nodes={data.nodes} onEdit={handleEdit} />
 
-            <div style={{
-              marginTop: "16px",
-              padding: "14px",
-              background: "#e6fffa",
-              borderRadius: "10px",
-              fontSize: "13px",
-              color: "#234e52",
-              borderLeft: "4px solid #38b2ac"
-            }}>
-              <strong>💡 How to use:</strong>
-              <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px", lineHeight: "1.8" }}>
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-slate-700 border-l-4 border-blue-500">
+              <strong className="text-slate-800">💡 How to use:</strong>
+              <ul className="mt-2 ml-5 list-disc space-y-1 leading-relaxed">
                 <li>Click <strong>"🧪 Test Connection"</strong> to verify it works</li>
                 <li>Edit text and colors in the preview above</li>
                 <li>Click <strong>"Add to Page"</strong> button</li>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import addOnUISdk from "https://new.express.adobe.com/static/add-on-sdk/sdk.js";
+import "./index.css";
 
 const BACKEND_URL = "http://localhost:3000";
 

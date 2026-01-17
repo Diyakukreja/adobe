@@ -71,54 +71,24 @@ function App({ addOnUISdk, sandboxProxy }) {
     return (
         <Theme system="express" scale="medium" color="light">
             {currentView === "main" ? (
-                <div style={{ 
-                    position: "relative", 
-                    width: "100%", 
-                    minHeight: "100vh",
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                }}>
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: "20px",
-                            right: "20px",
-                            zIndex: 1000,
-                            display: "flex",
-                            gap: "12px",
-                            background: "rgba(255, 255, 255, 0.95)",
-                            padding: "8px 16px",
-                            borderRadius: "12px",
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
-                        }}
-                    >
+                <div className="relative w-full min-h-screen bg-classic">
+                    <div className="absolute top-5 left-1/2 transform -translate-x-1/2 z-50 flex gap-3 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-xl shadow-classic-lg border border-slate-200">
                         <Button 
                             size="m" 
                             onClick={() => setCurrentView("publish")}
-                            style={{
-                                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "8px",
-                                fontWeight: "600"
-                            }}
+                            className="px-4 py-2 bg-slate-800 text-white rounded-lg font-semibold hover:bg-slate-700 transition-colors shadow-md"
                         >
                             Publish
                         </Button>
                         <Button 
                             size="m" 
                             onClick={() => setCurrentView("version")}
-                            style={{
-                                background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "8px",
-                                fontWeight: "600"
-                            }}
+                            className="px-4 py-2 bg-slate-700 text-white rounded-lg font-semibold hover:bg-slate-600 transition-colors shadow-md"
                         >
                             Version
                         </Button>
                     </div>
-                    <div style={{ paddingTop: "60px" }}>
+                    <div className="pt-20">
                         <FlowchartGenerator 
                             addOnUISdk={addOnUISdk} 
                             sandboxProxy={sandboxProxy} 

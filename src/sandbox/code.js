@@ -412,9 +412,24 @@ function start() {
                                                 if (!child) continue;
                                                 
                                                 try {
+                                                    // Determine type - check for text first
+                                                    let childType = "Unknown";
+                                                    if (child.constructor && child.constructor.name) {
+                                                        childType = child.constructor.name;
+                                                    }
+                                                    
+                                                    // Check if it's a text element
+                                                    const hasText = child.text !== undefined || 
+                                                                   (child.fullContent && typeof child.fullContent.getText === 'function') ||
+                                                                   child.plainText !== undefined;
+                                                    
+                                                    if (hasText && !childType.includes("Text")) {
+                                                        childType = "Text";
+                                                    }
+                                                    
                                                     const childData = {
                                                         id: child.id || `child_${artboardData.children.length}`,
-                                                        type: (child.constructor && child.constructor.name) ? child.constructor.name : "Unknown",
+                                                        type: childType,
                                                         translation: { x: 0, y: 0 },
                                                         width: 0,
                                                         height: 0
@@ -437,12 +452,26 @@ function start() {
                                                     if (typeof child.height === 'number') childData.height = child.height;
                                                     
                                                     // Capture text content if it's a text element
-                                                    if (child.text !== undefined) {
-                                                        try {
-                                                            childData.text = child.text || "";
-                                                        } catch (e) {
-                                                            console.warn("Could not capture text:", e);
+                                                    // Check multiple ways to detect text
+                                                    let textContent = null;
+                                                    try {
+                                                        if (child.text !== undefined && child.text !== null) {
+                                                            textContent = child.text;
+                                                        } else if (child.fullContent && typeof child.fullContent.getText === 'function') {
+                                                            textContent = child.fullContent.getText();
+                                                        } else if (child.plainText) {
+                                                            textContent = child.plainText;
                                                         }
+                                                        
+                                                        if (textContent !== null && textContent !== undefined) {
+                                                            childData.text = String(textContent);
+                                                            // If we found text, make sure type is Text
+                                                            if (childData.type === "Unknown" || !childData.type.includes("Text")) {
+                                                                childData.type = "Text";
+                                                            }
+                                                        }
+                                                    } catch (e) {
+                                                        console.warn("Could not capture text:", e);
                                                     }
                                                     
                                                     // Capture fill if it exists
@@ -598,12 +627,51 @@ function start() {
                     try {
                         let child = null;
                         
-                        if (childData.type === "Rectangle") {
+                        // Check if it's a text element (by type or by having text property)
+                        const isTextElement = childData.type === "Text" || 
+                                            childData.type === "TextFrame" || 
+                                            (childData.type && childData.type.includes("Text")) ||
+                                            (childData.text !== undefined && childData.text !== null && childData.text !== "");
+                        
+                        console.log(`[SANDBOX] Restoring child: type="${childData.type}", isText=${isTextElement}, hasText=${!!childData.text}`);
+                        
+                        if (isTextElement) {
+                            // Restore as text
+                            const textContent = childData.text || "Restored Text";
+                            console.log(`[SANDBOX] Creating text element: "${textContent.substring(0, 50)}${textContent.length > 50 ? '...' : ''}"`);
+                            child = editor.createText(textContent);
+                            
+                            if (child) {
+                                // Restore text dimensions if available
+                                try {
+                                    if (typeof childData.width === 'number' && childData.width > 0) {
+                                        child.width = childData.width;
+                                    }
+                                    if (typeof childData.height === 'number' && childData.height > 0) {
+                                        child.height = childData.height;
+                                    }
+                                } catch (e) {
+                                    console.warn("[SANDBOX] Could not restore text dimensions:", e);
+                                }
+                            }
+                        } else if (childData.type === "Rectangle") {
+                            // Restore as rectangle only if type is explicitly Rectangle
+                            console.log(`[SANDBOX] Creating rectangle: ${childData.width}x${childData.height}`);
                             child = editor.createRectangle();
                             if (child) {
-                                if (typeof childData.width === 'number') child.width = childData.width || 100;
-                                if (typeof childData.height === 'number') child.height = childData.height || 100;
+                                if (typeof childData.width === 'number' && childData.width > 0) {
+                                    child.width = childData.width;
+                                } else {
+                                    child.width = 100;
+                                }
                                 
+                                if (typeof childData.height === 'number' && childData.height > 0) {
+                                    child.height = childData.height;
+                                } else {
+                                    child.height = 100;
+                                }
+                                
+                                // Only set fill if it exists in the snapshot
                                 if (childData.fill) {
                                     try {
                                         const fill = editor.makeColorFill({
@@ -617,25 +685,16 @@ function start() {
                                         console.warn("[SANDBOX] Could not restore fill:", e);
                                     }
                                 }
-                            }
-                        } else if (childData.type === "Text") {
-                            const textContent = childData.text || "Restored Text";
-                            child = editor.createText(textContent);
-                            
-                            if (child && childData.width) {
-                                try {
-                                    if (typeof childData.width === 'number') child.width = childData.width;
-                                    if (typeof childData.height === 'number') child.height = childData.height;
-                                } catch (e) {
-                                    console.warn("[SANDBOX] Could not restore text dimensions:", e);
-                                }
+                                // If no fill data, don't set a fill (let it use default or be transparent)
                             }
                         } else {
-                            // Default to rectangle for unknown types
-                            child = editor.createRectangle();
-                            if (child) {
-                                if (typeof childData.width === 'number') child.width = childData.width || 100;
-                                if (typeof childData.height === 'number') child.height = childData.height || 100;
+                            // Unknown type - try to restore as text if it has text, otherwise skip
+                            if (childData.text) {
+                                console.log(`[SANDBOX] Unknown type "${childData.type}" but has text, restoring as text`);
+                                child = editor.createText(childData.text);
+                            } else {
+                                console.warn(`[SANDBOX] Unknown type "${childData.type}" without text, skipping`);
+                                continue; // Skip unknown types without text
                             }
                         }
                         

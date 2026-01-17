@@ -2,41 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Classic, elegant custom styles */
+/* Professional, corporate-grade styles */
 @layer base {
   body {
-    @apply font-sans antialiased;
+    @apply font-sans antialiased text-slate-900;
+  }
+  
+  * {
+    @apply transition-colors duration-150;
   }
 }
 
 @layer components {
-  /* Classic button styles */
+  /* Professional button styles */
   .btn-primary {
-    @apply px-6 py-3 bg-slate-800 text-white rounded-lg font-semibold 
-           shadow-lg hover:bg-slate-700 transition-all duration-200 
-           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-6 py-3 bg-slate-900 text-white rounded-lg font-medium 
+           shadow-md hover:bg-slate-800 hover:shadow-lg
+           transition-all duration-200 active:scale-[0.98]
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
+           focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2;
   }
   
   .btn-secondary {
-    @apply px-6 py-3 bg-white text-slate-800 border-2 border-slate-300 
-           rounded-lg font-semibold shadow-md hover:bg-slate-50 
-           transition-all duration-200 active:scale-95;
+    @apply px-6 py-3 bg-white text-slate-700 border border-slate-300 
+           rounded-lg font-medium shadow-sm hover:bg-slate-50 hover:border-slate-400
+           transition-all duration-200 active:scale-[0.98]
+           focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2;
   }
   
-  /* Classic card styles */
+  /* Professional card styles */
   .card {
-    @apply bg-white rounded-xl shadow-xl p-8 border border-slate-100;
+    @apply bg-white rounded-lg shadow-sm border border-slate-200 p-8 
+           relative;
   }
   
-  /* Classic input styles */
+  /* Professional input styles */
   .input-classic {
-    @apply w-full px-4 py-3 border-2 border-slate-300 rounded-lg 
-           focus:border-slate-600 focus:outline-none transition-colors 
-           duration-200 text-slate-800 placeholder-slate-400;
+    @apply w-full px-4 py-3 border border-slate-300 rounded-lg 
+           focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20 
+           focus:outline-none transition-all duration-200 text-slate-900 
+           placeholder-slate-400 bg-white
+           hover:border-slate-400;
   }
   
-  /* Classic gradient background */
+  /* Professional background */
   .bg-classic {
-    @apply bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200;
+    @apply bg-slate-50;
+  }
+  
+  /* Professional container */
+  .glass {
+    @apply bg-white/95 backdrop-blur-sm border border-slate-200 
+           shadow-md rounded-lg;
+  }
+  
+  /* Professional text */
+  .gradient-text {
+    @apply text-slate-900;
+  }
+  
+  /* Professional badge */
+  .badge {
+    @apply px-2.5 py-1 rounded-md text-xs font-medium 
+           bg-slate-100 text-slate-700 border border-slate-200;
+  }
+  
+  /* Subtle fade-in animation */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.3s ease-out;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 }

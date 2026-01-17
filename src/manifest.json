@@ -1,6 +1,6 @@
 {
     "testId": "a3481f97-a459-4151-830e-bf1761902266",
-    "name": "Hello World",
+    "name": "Live docs",
     "version": "1.0.0",
     "manifestVersion": 2,
     "requirements": {
@@ -20,3 +20,4 @@
         }
     ]
 }
+

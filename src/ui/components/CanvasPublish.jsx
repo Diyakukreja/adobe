@@ -28,7 +28,6 @@ const CanvasPublish = ({ addOnUISdk, sandboxProxy, onBack }) => {
             showStatus("Extracting document content...", "info");
             setIsPublishing(true);
 
-            // Get document content from sandbox
             const documentData = await sandboxProxy.extractDocument();
             
             if (!documentData) {
@@ -37,7 +36,6 @@ const CanvasPublish = ({ addOnUISdk, sandboxProxy, onBack }) => {
 
             showStatus("Publishing to Canvas...", "info");
 
-            // Send to backend
             let response;
             try {
                 response = await fetch(`${BACKEND_URL}/api/canvas/publish`, {
@@ -46,7 +44,6 @@ const CanvasPublish = ({ addOnUISdk, sandboxProxy, onBack }) => {
                     body: JSON.stringify(documentData)
                 });
             } catch (fetchError) {
-                // Handle connection errors
                 if (fetchError.message.includes("Failed to fetch") || fetchError.message.includes("ERR_CONNECTION_REFUSED")) {
                     throw new Error("Backend server is not running. Please start the backend server on port 3000. Run 'cd backend && npm start' in a terminal.");
                 }
@@ -64,7 +61,6 @@ const CanvasPublish = ({ addOnUISdk, sandboxProxy, onBack }) => {
             
             showStatus("Canvas published successfully! Opening viewer...", "success");
 
-            // Auto-open Canvas viewer
             setTimeout(() => {
                 try {
                     window.open(result.url, '_blank');
@@ -92,57 +88,59 @@ const CanvasPublish = ({ addOnUISdk, sandboxProxy, onBack }) => {
 
     return (
         <Theme system="express" scale="medium" color="light">
-            <div className="relative p-5 min-h-screen bg-classic">
+            <div className="relative p-6 min-h-screen bg-classic">
                 {onBack && (
-                    <div className="absolute top-5 left-5 z-50 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-xl shadow-classic-lg border border-slate-200">
+                    <div className="absolute top-6 left-6 z-50 glass px-4 py-2.5 animate-fade-in-up">
                         <Button 
                             size="m" 
                             onClick={onBack}
-                            className="bg-transparent border-none text-slate-700 font-semibold hover:text-slate-900"
+                            className="bg-transparent border-none text-slate-700 font-medium hover:text-slate-900 transition-colors"
                         >
                             ← Back
                         </Button>
                     </div>
                 )}
             
-                <div className="card max-w-2xl mx-auto mt-16">
-                    <h2 className="text-3xl font-bold text-slate-800 mb-5 tracking-tight">
-                        Canvas Publishing
-                    </h2>
+                <div className="card max-w-2xl mx-auto mt-20 animate-fade-in-up">
+                    <div className="mb-8 pb-6 border-b border-slate-200">
+                        <h1 className="text-2xl font-semibold text-slate-900 mb-2">
+                            Canvas Publishing
+                        </h1>
+                        <p className="text-sm text-slate-600">Transform your document into an interactive Canvas with tracking and insights</p>
+                    </div>
                     
-                    <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-                        Transform your document into an interactive Canvas with tracking and insights
-                    </p>
-                    
-                    <div className="mb-5">
+                    <div className="mb-6">
                         <button
                             onClick={handlePublish}
                             disabled={isPublishing}
-                            className={`w-full py-3.5 px-4 rounded-lg font-semibold text-white shadow-classic-lg transition-all duration-200 ${
-                                isPublishing 
-                                    ? "bg-slate-400 cursor-not-allowed" 
-                                    : "bg-slate-800 hover:bg-slate-700 active:scale-98"
-                            }`}
+                            className={`w-full btn-primary ${isPublishing ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
-                            {isPublishing ? "⏳ Publishing..." : "✨ Publish as Canvas"}
+                            {isPublishing ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                    Publishing...
+                                </span>
+                            ) : (
+                                "Publish as Canvas"
+                            )}
                         </button>
                     </div>
 
                     {canvasUrl && (
-                        <div className="mb-5 bg-slate-50 p-3 rounded-lg border-2 border-slate-200 flex gap-3 items-center">
+                        <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200 flex gap-3 items-center animate-fade-in-up">
                             <input
                                 ref={canvasLinkRef}
                                 id="canvasLink"
                                 type="text"
                                 value={canvasUrl}
                                 readOnly
-                                className="flex-1 min-w-0 px-3 py-2.5 border-2 border-slate-300 rounded-lg text-sm font-mono bg-white text-slate-800 overflow-hidden text-ellipsis whitespace-nowrap focus:border-slate-600 focus:outline-none transition-colors"
+                                className="flex-1 min-w-0 px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-mono bg-white text-slate-900 overflow-hidden text-ellipsis whitespace-nowrap focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20 focus:outline-none transition-all"
                             />
                             <button 
                                 onClick={handleCopyLink}
-                                className="px-4 py-2.5 bg-slate-700 text-white rounded-lg font-semibold text-sm whitespace-nowrap flex-shrink-0 hover:bg-slate-600 transition-colors shadow-md active:scale-95"
+                                className="px-4 py-2.5 bg-slate-700 text-white rounded-lg font-medium text-sm whitespace-nowrap flex-shrink-0 hover:bg-slate-600 transition-colors duration-200 shadow-sm hover:shadow-md active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2"
                             >
-                                📋 Copy
+                                Copy Link
                             </button>
                         </div>
                     )}
@@ -150,15 +148,30 @@ const CanvasPublish = ({ addOnUISdk, sandboxProxy, onBack }) => {
                     {status.visible && (
                         <div
                             id="status"
-                            className={`mt-5 p-4 rounded-lg text-sm border-2 ${
+                            className={`p-4 rounded-lg text-sm border-l-4 animate-fade-in-up ${
                                 status.type === "success" 
-                                    ? "bg-green-50 text-green-800 border-green-200" 
+                                    ? "bg-green-50 text-green-800 border-green-500" 
                                     : status.type === "error" 
-                                    ? "bg-red-50 text-red-800 border-red-200"
-                                    : "bg-blue-50 text-blue-800 border-blue-200"
+                                    ? "bg-red-50 text-red-800 border-red-500"
+                                    : "bg-blue-50 text-blue-800 border-blue-500"
                             }`}
                         >
-                            <div id="statusMessage">{status.message}</div>
+                            <div className="flex items-center gap-2">
+                                {status.type === "success" ? (
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                ) : status.type === "error" ? (
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                    </svg>
+                                )}
+                                <div id="statusMessage">{status.message}</div>
+                            </div>
                         </div>
                     )}
                 </div>

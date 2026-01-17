@@ -33,7 +33,11 @@ module.exports = {
             excludeChunks: ["code"]
         }),
         new CopyWebpackPlugin({
-            patterns: [{ from: "src/*.json", to: "[name][ext]" }]
+            patterns: [
+                { from: "src/*.json", to: "[name][ext]" },
+                { from: "src/add-on-console-override.js", to: "[name][ext]" },
+                { from: "src/assets/icons", to: "assets/icons", noErrorOnMissing: true }
+            ]
         })
     ],
     module: {

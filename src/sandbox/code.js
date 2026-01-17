@@ -364,6 +364,431 @@ function start() {
                 console.error("[SANDBOX] Stack:", error.stack);
                 return { success: false, error: error.toString() };
             }
+        },
+
+        captureSnapshot: () => {
+            try {
+                console.log("[SANDBOX] Capturing snapshot...");
+                const document = editor.documentRoot;
+                
+                if (!document || !document.pages) {
+                    console.warn("[SANDBOX] No document or pages found");
+                    return {
+                        documentSnapshot: {
+                            pages: []
+                        }
+                    };
+                }
+                
+                const pages = [];
+                
+                // Iterate through all pages
+                try {
+                    for (const page of document.pages) {
+                        if (!page) continue;
+                        
+                        const pageData = {
+                            id: page.id || `page_${pages.length}`,
+                            name: (page.name && typeof page.name === 'string') ? page.name : "Page",
+                            artboards: []
+                        };
+                        
+                        // Iterate through artboards in the page
+                        if (page.artboards) {
+                            try {
+                                for (const artboard of page.artboards) {
+                                    if (!artboard) continue;
+                                    
+                                    const artboardData = {
+                                        id: artboard.id || `artboard_${pageData.artboards.length}`,
+                                        name: (artboard.name && typeof artboard.name === 'string') ? artboard.name : "Artboard",
+                                        children: []
+                                    };
+                                    
+                                    // Capture all children
+                                    if (artboard.children) {
+                                        try {
+                                            for (const child of artboard.children) {
+                                                if (!child) continue;
+                                                
+                                                try {
+                                                    const childData = {
+                                                        id: child.id || `child_${artboardData.children.length}`,
+                                                        type: (child.constructor && child.constructor.name) ? child.constructor.name : "Unknown",
+                                                        translation: { x: 0, y: 0 },
+                                                        width: 0,
+                                                        height: 0
+                                                    };
+                                                    
+                                                    // Safely get translation
+                                                    if (child.translation) {
+                                                        try {
+                                                            childData.translation = {
+                                                                x: (typeof child.translation.x === 'number') ? child.translation.x : 0,
+                                                                y: (typeof child.translation.y === 'number') ? child.translation.y : 0
+                                                            };
+                                                        } catch (e) {
+                                                            console.warn("Could not capture translation:", e);
+                                                        }
+                                                    }
+                                                    
+                                                    // Safely get dimensions
+                                                    if (typeof child.width === 'number') childData.width = child.width;
+                                                    if (typeof child.height === 'number') childData.height = child.height;
+                                                    
+                                                    // Capture text content if it's a text element
+                                                    if (child.text !== undefined) {
+                                                        try {
+                                                            childData.text = child.text || "";
+                                                        } catch (e) {
+                                                            console.warn("Could not capture text:", e);
+                                                        }
+                                                    }
+                                                    
+                                                    // Capture fill if it exists
+                                                    if (child.fill) {
+                                                        try {
+                                                            const fillColor = child.fill.color;
+                                                            if (fillColor) {
+                                                                childData.fill = {
+                                                                    red: (typeof fillColor.red === 'number') ? fillColor.red : 0,
+                                                                    green: (typeof fillColor.green === 'number') ? fillColor.green : 0,
+                                                                    blue: (typeof fillColor.blue === 'number') ? fillColor.blue : 0,
+                                                                    alpha: (typeof fillColor.alpha === 'number') ? fillColor.alpha : 1
+                                                                };
+                                                            }
+                                                        } catch (e) {
+                                                            console.warn("Could not capture fill:", e);
+                                                        }
+                                                    }
+                                                    
+                                                    artboardData.children.push(childData);
+                                                } catch (e) {
+                                                    console.warn("Error capturing child:", e);
+                                                }
+                                            }
+                                        } catch (e) {
+                                            console.warn("Error iterating children:", e);
+                                        }
+                                    }
+                                    
+                                    pageData.artboards.push(artboardData);
+                                }
+                            } catch (e) {
+                                console.warn("Error iterating artboards:", e);
+                            }
+                        }
+                        
+                        pages.push(pageData);
+                    }
+                } catch (e) {
+                    console.warn("Error iterating pages:", e);
+                }
+                
+                const snapshot = {
+                    documentSnapshot: {
+                        pages: pages
+                    }
+                };
+                
+                console.log("[SANDBOX] ✅ Snapshot captured with", pages.length, "pages");
+                return snapshot;
+            } catch (error) {
+                console.error("[SANDBOX] ❌ Error capturing snapshot:", error);
+                // Return empty snapshot instead of throwing to prevent app crash
+                return {
+                    documentSnapshot: {
+                        pages: []
+                    }
+                };
+            }
+        },
+
+        restoreFromSnapshot: async (snapshot) => {
+            try {
+                console.log("[SANDBOX] 🔄 Restoring from snapshot...");
+                console.log("[SANDBOX] Snapshot received:", snapshot);
+                
+                // Handle both snapshot and snapshot.documentSnapshot formats
+                let snapshotData = snapshot;
+                if (snapshot && snapshot.documentSnapshot) {
+                    snapshotData = snapshot.documentSnapshot;
+                    console.log("[SANDBOX] Using documentSnapshot format");
+                }
+                
+                if (!snapshotData || !snapshotData.pages) {
+                    throw new Error("Invalid snapshot: missing pages");
+                }
+                
+                if (!snapshotData.pages || snapshotData.pages.length === 0) {
+                    throw new Error("Invalid snapshot: no pages in snapshot");
+                }
+                
+                const document = editor.documentRoot;
+                if (!document) {
+                    throw new Error("Document root not available");
+                }
+                
+                console.log("[SANDBOX] Document root found");
+                
+                // Use insertion parent as the target for restoration
+                const insertionParent = editor.context.insertionParent;
+                if (!insertionParent) {
+                    throw new Error("Insertion parent not available");
+                }
+                
+                console.log("[SANDBOX] Insertion parent:", insertionParent);
+                console.log("[SANDBOX] Insertion parent children:", insertionParent.children);
+                console.log("[SANDBOX] typeof children.append:", typeof insertionParent.children?.append);
+                
+                if (!insertionParent.children) {
+                    throw new Error("Insertion parent has no children property");
+                }
+                
+                if (typeof insertionParent.children.append !== 'function') {
+                    console.error("[SANDBOX] children.append is not a function!");
+                    console.error("[SANDBOX] children type:", typeof insertionParent.children);
+                    console.error("[SANDBOX] children methods:", Object.keys(insertionParent.children || {}));
+                    throw new Error(`children.append is not a function. Available methods: ${Object.keys(insertionParent.children || {}).join(', ')}`);
+                }
+                
+                console.log("[SANDBOX] ✅ Using insertion parent for restoration");
+                
+                // Get the first page and artboard from snapshot
+                const pageData = snapshotData.pages[0];
+                if (!pageData || !pageData.artboards || pageData.artboards.length === 0) {
+                    throw new Error("No artboards in snapshot");
+                }
+                
+                const artboardData = pageData.artboards[0];
+                if (!artboardData || !artboardData.children) {
+                    console.warn("[SANDBOX] No children to restore in snapshot");
+                    return { success: true, message: "No children to restore" };
+                }
+                
+                console.log(`[SANDBOX] Restoring ${artboardData.children.length} children`);
+                
+                // Clear existing children from insertion parent
+                if (insertionParent.children && insertionParent.children.length > 0) {
+                    console.log(`[SANDBOX] Clearing ${insertionParent.children.length} existing children`);
+                    const childrenToRemove = [];
+                    try {
+                        // Collect children to remove
+                        for (let i = 0; i < insertionParent.children.length; i++) {
+                            childrenToRemove.push(insertionParent.children[i]);
+                        }
+                        // Remove them
+                        for (const child of childrenToRemove) {
+                            try {
+                                if (child && typeof child.removeFromParent === 'function') {
+                                    child.removeFromParent();
+                                }
+                            } catch (e) {
+                                console.warn("[SANDBOX] Could not remove child:", e);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn("[SANDBOX] Error clearing children:", e);
+                    }
+                }
+                
+                // Restore children
+                let restoredCount = 0;
+                for (const childData of artboardData.children) {
+                    try {
+                        let child = null;
+                        
+                        if (childData.type === "Rectangle") {
+                            child = editor.createRectangle();
+                            if (child) {
+                                if (typeof childData.width === 'number') child.width = childData.width || 100;
+                                if (typeof childData.height === 'number') child.height = childData.height || 100;
+                                
+                                if (childData.fill) {
+                                    try {
+                                        const fill = editor.makeColorFill({
+                                            red: childData.fill.red || 0,
+                                            green: childData.fill.green || 0,
+                                            blue: childData.fill.blue || 0,
+                                            alpha: childData.fill.alpha !== undefined ? childData.fill.alpha : 1
+                                        });
+                                        child.fill = fill;
+                                    } catch (e) {
+                                        console.warn("[SANDBOX] Could not restore fill:", e);
+                                    }
+                                }
+                            }
+                        } else if (childData.type === "Text") {
+                            const textContent = childData.text || "Restored Text";
+                            child = editor.createText(textContent);
+                            
+                            if (child && childData.width) {
+                                try {
+                                    if (typeof childData.width === 'number') child.width = childData.width;
+                                    if (typeof childData.height === 'number') child.height = childData.height;
+                                } catch (e) {
+                                    console.warn("[SANDBOX] Could not restore text dimensions:", e);
+                                }
+                            }
+                        } else {
+                            // Default to rectangle for unknown types
+                            child = editor.createRectangle();
+                            if (child) {
+                                if (typeof childData.width === 'number') child.width = childData.width || 100;
+                                if (typeof childData.height === 'number') child.height = childData.height || 100;
+                            }
+                        }
+                        
+                        if (child) {
+                            // Set translation
+                            if (childData.translation) {
+                                try {
+                                    child.translation = {
+                                        x: childData.translation.x || 0,
+                                        y: childData.translation.y || 0
+                                    };
+                                } catch (e) {
+                                    console.warn("[SANDBOX] Could not set translation:", e);
+                                }
+                            }
+                            
+                            // Append to insertion parent
+                            try {
+                                if (insertionParent.children && typeof insertionParent.children.append === 'function') {
+                                    insertionParent.children.append(child);
+                                    restoredCount++;
+                                    console.log(`[SANDBOX] ✅ Restored ${childData.type} (${restoredCount}/${artboardData.children.length})`);
+                                } else {
+                                    console.error("[SANDBOX] ❌ Cannot append - children.append is not a function");
+                                    console.error("[SANDBOX] insertionParent.children:", insertionParent.children);
+                                    console.error("[SANDBOX] typeof append:", typeof insertionParent.children?.append);
+                                }
+                            } catch (appendError) {
+                                console.error(`[SANDBOX] ❌ Error appending child:`, appendError);
+                                console.error("[SANDBOX] Error message:", appendError.message);
+                                console.error("[SANDBOX] Error stack:", appendError.stack);
+                                throw new Error(`Failed to append child: ${appendError.message || appendError.toString()}`);
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`[SANDBOX] ❌ Could not restore child ${childData.id}:`, e);
+                        console.error("[SANDBOX] Error details:", e.message, e.stack);
+                        // Continue with next child instead of failing completely
+                    }
+                }
+                
+                console.log(`[SANDBOX] ✅ Snapshot restored successfully (${restoredCount} children)`);
+                return { success: true, restoredCount };
+            } catch (error) {
+                console.error("[SANDBOX] ❌ Error restoring snapshot:", error);
+                console.error("[SANDBOX] Error message:", error.message);
+                console.error("[SANDBOX] Error stack:", error.stack);
+                throw error;
+            }
+        },
+
+        extractDocument: async () => {
+            try {
+                console.log("[SANDBOX] Extracting document for Canvas...");
+                
+                const document = editor.documentRoot;
+                const title = document.name || "Untitled Document";
+                
+                // Extract content and structure from document
+                const sections = [];
+                let fullContent = "";
+                
+                // Iterate through pages and artboards to extract content
+                if (document.pages) {
+                    for (const page of document.pages) {
+                        if (!page || !page.artboards) continue;
+                        
+                        for (const artboard of page.artboards) {
+                            if (!artboard || !artboard.children) continue;
+                            
+                            // Extract text from children
+                            for (const child of artboard.children) {
+                                try {
+                                    if (child && child.text) {
+                                        const text = child.text;
+                                        
+                                        // Split text into paragraphs (preserve paragraph structure)
+                                        // Split by double newlines, single newlines, or keep as single paragraph
+                                        const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+                                        
+                                        if (paragraphs.length === 0) {
+                                            // If no paragraphs found, try splitting by single newlines
+                                            const singleLineParas = text.split(/\n/).filter(p => p.trim().length > 0);
+                                            if (singleLineParas.length > 0) {
+                                                paragraphs.push(...singleLineParas);
+                                            } else {
+                                                // If still no paragraphs, use the whole text
+                                                paragraphs.push(text);
+                                            }
+                                        }
+                                        
+                                        // Create a section for each paragraph to preserve structure
+                                        paragraphs.forEach((para, index) => {
+                                            const paraText = para.trim();
+                                            if (paraText.length > 0) {
+                                                fullContent += paraText + "\n\n";
+                                                
+                                                // Generate a title from first few words
+                                                const words = paraText.split(/\s+/);
+                                                const titleText = words.slice(0, 5).join(" ") + (words.length > 5 ? "..." : "");
+                                                
+                                                sections.push({
+                                                    id: child.id ? `${child.id}_para_${index}` : `section_${sections.length}`,
+                                                    title: titleText || `Paragraph ${index + 1}`,
+                                                    content: paraText // Preserve original paragraph with newlines
+                                                });
+                                            }
+                                        });
+                                    }
+                                } catch (e) {
+                                    console.warn("Error extracting text from child:", e);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // If no sections found, create a default one
+                if (sections.length === 0) {
+                    sections.push({
+                        id: "section_1",
+                        title: "Document Content",
+                        content: fullContent || "No content found in document"
+                    });
+                }
+                
+                const structure = {
+                    sections: sections
+                };
+                
+                const result = {
+                    title: title,
+                    content: fullContent || "No content extracted",
+                    structure: structure
+                };
+                
+                console.log("[SANDBOX] ✅ Document extracted:", result);
+                return result;
+            } catch (error) {
+                console.error("[SANDBOX] ❌ Error extracting document:", error);
+                // Return a default structure instead of throwing
+                return {
+                    title: "Untitled Document",
+                    content: "Failed to extract document content",
+                    structure: {
+                        sections: [{
+                            id: "section_1",
+                            title: "Error",
+                            content: "Failed to extract document content"
+                        }]
+                    }
+                };
+            }
         }
     };
 

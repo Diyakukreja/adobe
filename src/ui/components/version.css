@@ -1,0 +1,36 @@
+.version-control-app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    background: transparent;
+}
+
+.version-content-wrapper {
+    background: white;
+    border-radius: 16px;
+    margin: 60px 20px 20px 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 80px);
+}
+
+/* Scrollbar styling */
+.timeline-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.timeline-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.timeline-content::-webkit-scrollbar-thumb {
+    background: var(--spectrum-global-color-gray-300);
+    border-radius: 4px;
+}
+
+.timeline-content::-webkit-scrollbar-thumb:hover {
+    background: var(--spectrum-global-color-gray-400);
+}

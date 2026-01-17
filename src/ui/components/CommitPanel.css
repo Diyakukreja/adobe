@@ -1,0 +1,64 @@
+.commit-panel {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    background: white;
+}
+
+.commit-panel-header {
+    margin-bottom: 16px;
+}
+
+.panel-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--spectrum-global-color-gray-900);
+    letter-spacing: -0.01em;
+}
+
+.commit-panel-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.commit-message-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--spectrum-global-color-gray-300);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--spectrum-global-color-gray-900);
+    background: var(--spectrum-global-color-gray-50);
+    resize: vertical;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.commit-message-input:focus {
+    outline: none;
+    border-color: var(--spectrum-global-color-blue-500);
+    background: white;
+    box-shadow: 0 0 0 3px var(--spectrum-global-color-blue-100);
+}
+
+.commit-message-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.commit-message-input::placeholder {
+    color: var(--spectrum-global-color-gray-500);
+}
+
+.commit-panel-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.commit-hint {
+    font-size: 12px;
+    color: var(--spectrum-global-color-gray-500);
+}
